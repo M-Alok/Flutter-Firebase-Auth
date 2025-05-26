@@ -6,6 +6,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ui_login/utils.dart';
+import 'package:uuid/uuid.dart';
 
 class AddNewTask extends StatefulWidget {
   const AddNewTask({super.key});
@@ -30,7 +31,8 @@ class _AddNewTaskState extends State<AddNewTask> {
 
   Future<void> uploadTaskToDB() async {
     try {
-      final data = await FirebaseFirestore.instance.collection('tasks').add({
+      final id = const Uuid().v4();
+      await FirebaseFirestore.instance.collection('tasks').doc(id).set({
         'title': titleController.text.trim(),
         'description': descriptionController.text.trim(),
         'date': selectedDate,
@@ -38,7 +40,7 @@ class _AddNewTaskState extends State<AddNewTask> {
         'postedAt': FieldValue.serverTimestamp(),
         'color': rgbToHex(selectedColor),
       });
-      print('Data: ${data.id}');
+      print('Data: $id');
     } catch (e) {
       print('Error $e');
     }
