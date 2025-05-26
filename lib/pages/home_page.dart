@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../widgets/add_new_task.dart';
 import '../utils.dart';
 import '../widgets/date_selector.dart';
@@ -69,29 +70,33 @@ class _MyHomePageState extends State<MyHomePage> {
                     itemCount: _taskDocs.length,
                     itemBuilder: (context, index) {
                       final task = _taskDocs[index];
+                      final taskDateTime = (task['date'] as Timestamp).toDate();
+                      print('taskDateTime: $taskDateTime');
 
                       return Dismissible(
                         key: ValueKey(task.id),
                         onDismissed: (direction) async {
-                          final deletedData = snapshot.data!.docs[index].data();
+                          if (direction == DismissDirection.endToStart) {
+                            final deletedData = snapshot.data!.docs[index].data();
 
-                          // setState(() {
-                          //   _taskDocs.removeAt(index);
-                          // });
+                            // setState(() {
+                            //   _taskDocs.removeAt(index);
+                            // });
 
-                          await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
+                            await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Task deleted'),
-                              action: SnackBarAction(
-                                label: 'UNDO',
-                                onPressed: () {
-                                  FirebaseFirestore.instance.collection('tasks').doc(task.id).set(deletedData);
-                                },
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Task deleted'),
+                                action: SnackBarAction(
+                                  label: 'UNDO',
+                                  onPressed: () {
+                                    FirebaseFirestore.instance.collection('tasks').doc(task.id).set(deletedData);
+                                  },
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: Row(
                           children: [
@@ -100,24 +105,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                 color: hexToColor(task['color']),
                                 headerText: task['title'],
                                 descriptionText: task['description'],
-                                scheduledDate: task['date'].toString(),
+                                scheduledDate: DateFormat.yMMMd().format(taskDateTime),
                               ),
                             ),
-                            Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                color: strengthenColor(const Color.fromRGBO(246, 222, 194, 1), 0.69),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.all(12.0),
-                              child: Text(
-                                '10:00AM',
-                                style: TextStyle(fontSize: 17),
-                              ),
-                            )
+                            // Container(
+                            //   height: 50,
+                            //   width: 50,
+                            //   decoration: BoxDecoration(
+                            //     color: strengthenColor(const Color.fromRGBO(246, 222, 194, 1), 0.69),
+                            //     shape: BoxShape.circle,
+                            //   ),
+                            // ),
+                            // const Padding(
+                            //   padding: EdgeInsets.all(12.0),
+                            //   child: Text(
+                            //     '10:00AM',
+                            //     style: TextStyle(fontSize: 17),
+                            //   ),
+                            // )
                           ],
                         ),
                       );
